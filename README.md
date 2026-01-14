@@ -1,0 +1,1 @@
+# artemis-jenkins-adapter
