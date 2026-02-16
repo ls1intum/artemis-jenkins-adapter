@@ -9,3 +9,5 @@ build/
 
 # Dependencies (if using Gradle/Maven)
 .gradle/
+
+.env

@@ -13,6 +13,9 @@ COPY gradle.properties .
 # Make gradlew executable
 RUN chmod +x ./gradlew
 
+# Download dependencies first (better layer caching)
+RUN ./gradlew dependencies --no-daemon || true
+
 # Copy source code
 COPY jenkins-connector/src src
 
@@ -21,6 +24,11 @@ RUN ./gradlew clean build -x test --no-daemon
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
+
+# Add labels for better image management
+# LABEL maintainer="your-email@example.com"
+# LABEL version="1.0.0"
+# LABEL description="Jenkins Connector Service"
 
 # Add a user to run the application (security best practice)
 RUN addgroup -S spring && adduser -S spring -G spring
@@ -41,5 +49,5 @@ EXPOSE 8081
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+# Run the application with optimized JVM settings
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]
